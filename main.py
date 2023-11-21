@@ -211,7 +211,7 @@ def  shangpintuiguang_toushibiao():
     sheet_names = excel_file.sheet_names
 
     # 创建一个新的Excel文件来保存数据透视表
-    output_filename = "test/pivot_tables_shangpintuiguang.xlsx"
+    output_filename = "pivot_tables_shangpintuiguang.xlsx"
     writer = pd.ExcelWriter(output_filename, engine='openpyxl')
 
     # 遍历每个工作簿
@@ -260,7 +260,7 @@ def  zhanshituiguang_toushibiao():
     sheet_names = excel_file.sheet_names
 
     # 创建一个新的Excel文件来保存数据透视表
-    output_filename = "test/pivot_tables_zhanshituiguang.xlsx"
+    output_filename = "pivot_tables_zhanshituiguang.xlsx"
     writer = pd.ExcelWriter(output_filename, engine='openpyxl')
 
     # 遍历每个工作簿
@@ -384,7 +384,7 @@ if __name__ == '__main__':
     # hebing()
     # delxiangtonghang()
     # xiaoshou_toushibiao()
-    # xiaoshou_toushibiao2()
-    # shangpintuiguang_toushibiao()
-    # zhanshituiguang_toushibiao()
+    xiaoshou_toushibiao2()
+    shangpintuiguang_toushibiao()
+    zhanshituiguang_toushibiao()
     huizong()
