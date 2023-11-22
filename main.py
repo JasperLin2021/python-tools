@@ -250,7 +250,7 @@ def brandPromotionPivotTable():
     deleteRow(output_filename, 1)
 
 
-def modify_BrandPromotion():
+def modify_brandPromotionPivotTable():
     ad_sku_dict = get_ad_sku_dict()
     # 打开PivotTable_3_BrandPromotion.xlsx文件
     # 打开PivotTable_3_BrandPromotion.xlsx文件
@@ -387,6 +387,6 @@ if __name__ == '__main__':
     productPromotionPivotTable()
     displayPromotionPivotTable()
     brandPromotionPivotTable()
-    modify_BrandPromotion()
+    modify_brandPromotionPivotTable()
     mergePivotTable()
     summary()
