@@ -11,7 +11,7 @@ from utils import deleteRow, unmergeCells, deleteCells, get_ad_sku_dict
 
 def addNewColumn():
     # 获取当前目录下的所有Excel文件
-    files = [file for file in os.listdir() if file.endswith('.xlsx')]
+    files = [file for file in os.listdir() if file.endswith('.xlsx') and file != '品牌广告明细sku.xlsx' ]
     for file in files:
         # 加载Excel文件
         wb = load_workbook(file)
@@ -23,7 +23,8 @@ def addNewColumn():
             # 设置第一行的值为"店铺"
             ws.cell(row=1, column=1).value = "店铺"
             # 获取表名的前两个字符
-            shop_name = file[:2] + sheet
+            shop_name =  file.split("店")[0] + "店" + sheet
+
 
             # 设置余下行的值为表名的前两个字符
             i = ws.max_row

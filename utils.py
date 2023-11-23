@@ -24,7 +24,7 @@ def deleteRow(file, type, keyword=None):
         for ws in wb.worksheets:
             rows = list(ws.rows)
             for row in rows[1:]:
-                if keyword in row[0].value:
+                if row[0].value is not None and keyword in row[0].value:
                     ws.delete_rows(row[0].row)
     # 保存修改
     wb.save(file)
