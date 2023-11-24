@@ -98,16 +98,20 @@ def get_ad_sku_dict():
 
     # 打开品牌广告明细sku.xlsx文件
     wb = openpyxl.load_workbook("品牌广告明细sku.xlsx")
-    ws = wb.active
+    # ws = wb.active
 
-    # 遍历每行数据，构建字典
-    for row in ws.iter_rows(min_row=2, values_only=True):
-        ad_name = row[0]
-        ad_sku = row[1]
+    for sheet_name in wb.sheetnames:
+        if sheet_name == "品牌广告":
+            ws = wb[sheet_name]
 
-        if ad_name not in ad_sku_dict:
-            ad_sku_dict[ad_name] = [ad_sku]
-        else:
-            ad_sku_dict[ad_name].append(ad_sku)
+            # 遍历每行数据，构建字典
+            for row in ws.iter_rows(min_row=2, values_only=True):
+                ad_name = row[0]
+                ad_sku = row[1]
 
-    return ad_sku_dict
+                if ad_name not in ad_sku_dict:
+                    ad_sku_dict[ad_name] = [ad_sku]
+                else:
+                    ad_sku_dict[ad_name].append(ad_sku)
+
+            return ad_sku_dict

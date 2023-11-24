@@ -9,9 +9,24 @@ import pandas as pd
 from utils import deleteRow, unmergeCells, deleteCells, get_ad_sku_dict
 
 
+
+def createDirectory():
+    # 获取当前工作目录
+    current_directory = os.getcwd()
+
+    # 新建文件夹
+    folder_name = "输出"
+    folder_path = os.path.join(current_directory, folder_name)
+    os.makedirs(folder_path)
+
 def addNewColumn():
+    # 获取当前工作目录
+    current_directory = os.getcwd()
+
+    # 新建文件夹
+    folder_name = "输出"
     # 获取当前目录下的所有Excel文件
-    files = [file for file in os.listdir() if file.endswith('.xlsx') and file != '品牌广告明细sku.xlsx' ]
+    files = [file for file in os.listdir() if file.endswith('.xlsx') and file != '品牌广告明细sku.xlsx' and not file.startswith("亚马逊库存分析") ]
     for file in files:
         # 加载Excel文件
         wb = load_workbook(file)
@@ -40,15 +55,22 @@ def addNewColumn():
             for row in range(2, real_max_row + 1):
                 ws.cell(row=row, column=1).value = shop_name
             # 构建新的文件名
-        new_file = file.replace('.xlsx', '-new.xlsx')
+        output_filename = file.replace('.xlsx', '-new.xlsx')
+        new_file = os.path.join(current_directory, folder_name, output_filename)
         # 保存修改后的Excel文件为新文件
         wb.save(new_file)
 
 
 def mergeFilesByWorkbookName():
+    # 获取当前工作目录
+    current_directory = os.getcwd()
+    # 新建文件夹
+    folder_name = "输出"
+
     # 获取当前目录下所有以"-new.xlsx"结尾的Excel文件
-    files = [file for file in os.listdir() if file.endswith('-new.xlsx')]
+    files = [file for file in os.listdir(folder_name) if file.endswith('-new.xlsx')]
     output_filename = "mergeFilesByWorkbookName.xlsx"
+    new_file = os.path.join(current_directory, folder_name, output_filename)
 
     # 字典用于存储工作簿名称和对应的工作表数据
     workbook_data = {}
@@ -56,7 +78,7 @@ def mergeFilesByWorkbookName():
     # 遍历Excel文件
     for file in files:
         # 加载Excel文件
-        wb = load_workbook(file)
+        wb = load_workbook(os.path.join(current_directory, folder_name, file))
         # 遍历工作表
         for sheetname in wb.sheetnames:
             # 获取当前工作表
@@ -87,22 +109,29 @@ def mergeFilesByWorkbookName():
     del merged_wb['Sheet']
 
     # 保存合并后的Excel文件
-    merged_wb.save(output_filename)
+    merged_wb.save(new_file)
 
-    deleteRow(output_filename, 3, '店铺')
+    deleteRow(new_file, 3, '店铺')
+    deleteRow(new_file, 1)
 
 
 def salesPivotTable():
+    # 获取当前工作目录
+    current_directory = os.getcwd()
+    # 新建文件夹
+    folder_name = "输出"
+
     # 读取Excel文件
     filename = "mergeFilesByWorkbookName.xlsx"
-    excel_file = pd.ExcelFile(filename)
+    excel_file = pd.ExcelFile(os.path.join(current_directory, folder_name, filename))
 
     # 获取所有工作簿名称
     sheet_names = excel_file.sheet_names
 
     # 创建一个新的Excel文件来保存数据透视表
     output_filename = "Merge_SalesPivotTable.xlsx"
-    writer = pd.ExcelWriter(output_filename, engine='openpyxl')
+    new_file = os.path.join(current_directory, folder_name, output_filename)
+    writer = pd.ExcelWriter(new_file, engine='openpyxl')
 
     # 遍历每个工作簿
     for sheet_name in sheet_names:
@@ -128,21 +157,26 @@ def salesPivotTable():
     writer.save()
     writer.close()
 
-    unmergeCells(output_filename)
-    deleteRow(output_filename, 2)
+    unmergeCells(new_file)
+    deleteRow(new_file, 2)
 
 
 def productPromotionPivotTable():
+    # 获取当前工作目录
+    current_directory = os.getcwd()
+    # 新建文件夹
+    folder_name = "输出"
     # 读取Excel文件
     filename = "mergeFilesByWorkbookName.xlsx"
-    excel_file = pd.ExcelFile(filename)
+    excel_file = pd.ExcelFile(os.path.join(current_directory, folder_name, filename))
 
     # 获取所有工作簿名称
     sheet_names = excel_file.sheet_names
 
     # 创建一个新的Excel文件来保存数据透视表
     output_filename = "PivotTable_1_ProductPromotion.xlsx"
-    writer = pd.ExcelWriter(output_filename, engine='openpyxl')
+    new_file = os.path.join(current_directory, folder_name, output_filename)
+    writer = pd.ExcelWriter(new_file, engine='openpyxl')
 
     # 遍历每个工作簿
     for sheet_name in sheet_names:
@@ -168,20 +202,25 @@ def productPromotionPivotTable():
     writer.save()
     writer.close()
 
-    unmergeCells(output_filename)
+    unmergeCells(new_file)
 
 
 def displayPromotionPivotTable():
+    # 获取当前工作目录
+    current_directory = os.getcwd()
+    # 新建文件夹
+    folder_name = "输出"
     # 读取Excel文件
     filename = "mergeFilesByWorkbookName.xlsx"
-    excel_file = pd.ExcelFile(filename)
+    excel_file = pd.ExcelFile(os.path.join(current_directory, folder_name, filename))
 
     # 获取所有工作簿名称
     sheet_names = excel_file.sheet_names
 
     # 创建一个新的Excel文件来保存数据透视表
     output_filename = "PivotTable_2_DisplayPromotion.xlsx"
-    writer = pd.ExcelWriter(output_filename, engine='openpyxl')
+    new_file = os.path.join(current_directory, folder_name, output_filename)
+    writer = pd.ExcelWriter(new_file, engine='openpyxl')
 
     # 遍历每个工作簿
     for sheet_name in sheet_names:
@@ -207,20 +246,25 @@ def displayPromotionPivotTable():
     writer.save()
     writer.close()
 
-    unmergeCells(output_filename)
+    unmergeCells(new_file)
 
 
 def brandPromotionPivotTable():
+    # 获取当前工作目录
+    current_directory = os.getcwd()
+    # 新建文件夹
+    folder_name = "输出"
     # 读取Excel文件
     filename = "mergeFilesByWorkbookName.xlsx"
-    excel_file = pd.ExcelFile(filename)
+    excel_file = pd.ExcelFile(os.path.join(current_directory, folder_name, filename))
 
     # 获取所有工作簿名称
     sheet_names = excel_file.sheet_names
 
     # 创建一个新的Excel文件来保存数据透视表
     output_filename = "PivotTable_3_BrandPromotion.xlsx"
-    writer = pd.ExcelWriter(output_filename, engine='openpyxl')
+    new_file = os.path.join(current_directory, folder_name, output_filename)
+    writer = pd.ExcelWriter(new_file, engine='openpyxl')
 
     # 遍历每个工作簿
     for sheet_name in sheet_names:
@@ -247,15 +291,21 @@ def brandPromotionPivotTable():
     writer.save()
     writer.close()
 
-    unmergeCells(output_filename)
-    deleteRow(output_filename, 1)
+    unmergeCells(new_file)
+    deleteRow(new_file, 1)
 
 
 def modify_brandPromotionPivotTable():
+    # 获取当前工作目录
+    current_directory = os.getcwd()
+    # 新建文件夹
+    folder_name = "输出"
+
     ad_sku_dict = get_ad_sku_dict()
+
     # 打开PivotTable_3_BrandPromotion.xlsx文件
-    # 打开PivotTable_3_BrandPromotion.xlsx文件
-    wb = load_workbook("PivotTable_3_BrandPromotion.xlsx")
+    loadFile= os.path.join(current_directory, folder_name, "PivotTable_3_BrandPromotion.xlsx")
+    wb = load_workbook(loadFile)
 
     # 遍历每个工作表
     for sheet_name in wb.sheetnames:
@@ -290,24 +340,29 @@ def modify_brandPromotionPivotTable():
             # 删除原始行
             ws.delete_rows(row_number, amount=1)
     # 保存修改后的Excel文件
-    wb.save("PivotTable_3_BrandPromotion.xlsx")
+    wb.save(loadFile)
 
-    # 打印广告活动名称和对应的广告SKU值
-    # for ad_name, ad_skus in ad_sku_dict.items():
-    #     print(f"广告活动名称: {ad_name}, 广告SKU: {ad_skus}")
+
 
 
 def mergePivotTable():
-    # 获取当前目录下所有以"-new.xlsx"结尾的Excel文件
-    files = [file for file in os.listdir() if file.startswith('PivotTable_')]
+    # 获取当前工作目录
+    current_directory = os.getcwd()
+    # 新建文件夹
+    folder_name = "输出"
+
+
+    files = [file for file in os.listdir(folder_name) if file.startswith('PivotTable_')]
+
     output_filename = "Merge_PromotionPivotTable.xlsx"
+    new_file = os.path.join(current_directory, folder_name, output_filename)
     # 字典用于存储工作簿名称和对应的工作表数据
     workbook_data = {}
 
     # 遍历Excel文件
     for file in files:
         # 加载Excel文件
-        wb = load_workbook(file)
+        wb = load_workbook(os.path.join(current_directory, folder_name, file))
 
         # 遍历工作表
         for sheetname in wb.sheetnames:
@@ -339,16 +394,22 @@ def mergePivotTable():
     del merged_wb['Sheet']
 
     # 保存合并后的Excel文件
-    merged_wb.save(output_filename)
+    merged_wb.save(new_file)
 
-    deleteRow(output_filename, 1)
-    deleteRow(output_filename, 3, '店铺')
+    deleteRow(new_file, 1)
+    deleteRow(new_file, 3, '店铺')
 
 
 def summary():
+    # 获取当前工作目录
+    current_directory = os.getcwd()
+    # 新建文件夹
+    folder_name = "输出"
+
     # 获取文件夹中以"Merge_"开头的所有Excel文件
-    files = [file for file in os.listdir() if file.startswith('Merge_')]
+    files = [file for file in os.listdir(folder_name) if file.startswith('Merge_')]
     output_filename = "汇总.xlsx"
+    new_file = os.path.join(current_directory, folder_name, output_filename)
 
     # 创建一个空的DataFrame用于存储合并后的数据
     merged_data = pd.DataFrame()
@@ -358,13 +419,13 @@ def summary():
         # file_path = os.path.join(folder_path, file)
 
         # 读取Excel文件中的所有工作簿
-        xl = pd.ExcelFile(file)
+        xl = pd.ExcelFile(os.path.join(current_directory, folder_name, file))
         sheet_names = xl.sheet_names
 
         # 遍历每个工作簿并将其横向合并到merged_data中
         for sheet_name in sheet_names:
             # 读取当前工作簿的数据
-            df = pd.read_excel(file, sheet_name=sheet_name)
+            df = pd.read_excel(os.path.join(current_directory, folder_name, file), sheet_name=sheet_name)
 
             # 在最右侧新增两个空白列
             df_with_columns = df.assign(NewColumn1="", NewColumn2="")
@@ -373,15 +434,16 @@ def summary():
             merged_data = pd.concat([merged_data, df_with_columns], axis=1)
 
     # 将合并后的数据写入新的Excel文件
-    merged_data.to_excel(output_filename, index=False)
+    merged_data.to_excel(new_file, index=False)
 
     # 删除指定单元格
-    deleteCells(output_filename, "NewColumn")
+    deleteCells(new_file, "NewColumn")
 
 
 if __name__ == '__main__':
     print("这个脚本正在直接运行。")
 
+    createDirectory()
     addNewColumn()
     mergeFilesByWorkbookName()
     salesPivotTable()
@@ -389,5 +451,12 @@ if __name__ == '__main__':
     displayPromotionPivotTable()
     brandPromotionPivotTable()
     modify_brandPromotionPivotTable()
+
+
+
+
+
+
+
     mergePivotTable()
     summary()
