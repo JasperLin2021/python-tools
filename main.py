@@ -6,7 +6,7 @@ from openpyxl.utils import get_column_letter
 from openpyxl.workbook import Workbook
 import pandas as pd
 
-from utils import deleteRow, unmergeCells, deleteCells, get_ad_sku_dict, getNumberDaysBetweenDates
+from utils import deleteRow, unmergeCells, deleteCells, get_ad_sku_dict, getNumberDaysBetweenDates, currencyConverter
 
 
 def createDirectory():
@@ -39,7 +39,6 @@ def addNewColumn():
             # 获取表名的前两个字符
             shop_name =  file.split("店")[0] + "店" + sheet
 
-
             # 设置余下行的值为表名的前两个字符
             i = ws.max_row
             real_max_row = 0
@@ -53,6 +52,41 @@ def addNewColumn():
 
             for row in range(2, real_max_row + 1):
                 ws.cell(row=row, column=1).value = shop_name
+
+            if sheet.startswith("销售"):
+                date_diff = getNumberDaysBetweenDates(sheet,"销售")
+                if date_diff == 14:
+                    # 选择要操作的工作表
+                    # ws = wb[sheet]  # 将'Sheet1'替换为您的工作表名称
+
+                    # 查找列名为"已订购商品销售额"的列
+                    column_name = "已订购商品销售额"
+                    column_index = None
+                    for col in ws.iter_cols():
+                        if col[0].value == column_name:
+                            column_index = col[0].column
+                            break
+
+                    # 如果找到了该列，则在其右边插入空白列
+                    if column_index is not None:
+                        new_column_index = column_index + 1
+                        ws.insert_cols(new_column_index)
+
+                        # 设置新列的列名为"换算为人民币"
+                        new_column_name = "换算为人民币"
+                        ws.cell(row=1, column=new_column_index).value = new_column_name
+
+                        # 获取该列数据的行数
+                        num_rows = ws.max_row
+
+                        # 从第二行开始，将新列的值设置为对应行的"已订购商品销售额"列的值加1
+                        for row in range(2, num_rows + 1):
+                            cell_old = ws.cell(row=row, column=column_index)
+
+                            new_cell_value = currencyConverter(cell_old)
+
+                            ws.cell(row=row, column=new_column_index).value = new_cell_value
+
             # 构建新的文件名
         output_filename = file.replace('.xlsx', '-new.xlsx')
         new_file = os.path.join(current_directory, folder_name, output_filename)
@@ -189,7 +223,7 @@ def fifteenDaySalesPivotTable():
                 df = excel_file.parse(sheet_name)
 
                 # 创建数据透视表
-                pivot_table = pd.pivot_table(df, values='已订购商品销售额', index=['店铺', 'SKU'], aggfunc='sum')
+                pivot_table = pd.pivot_table(df, values=['换算为人民币'], index=['店铺', 'SKU', '已订购商品销售额'], aggfunc='sum')
 
                 # 将数据透视表写入新的工作簿
                 pivot_table.to_excel(writer, sheet_name=sheet_name, index=True, startrow=1)
@@ -350,7 +384,7 @@ def modify_brandPromotionPivotTable():
     # 新建文件夹
     folder_name = "输出"
 
-    ad_sku_dict = get_ad_sku_dict()
+    ad_sku_dict = get_ad_sku_dict("品牌广告")
 
     # 打开PivotTable_3_BrandPromotion.xlsx文件
     loadFile= os.path.join(current_directory, folder_name, "PivotTable_3_BrandPromotion.xlsx")
@@ -390,6 +424,42 @@ def modify_brandPromotionPivotTable():
             ws.delete_rows(row_number, amount=1)
     # 保存修改后的Excel文件
     wb.save(loadFile)
+
+
+def twoWeeksEndValue():
+    # 获取当前工作目录
+    current_directory = os.getcwd()
+    # 新建文件夹
+    folder_name = "输出"
+    # 新建一个Excel文件用于存储提取的数据
+
+    output_workbook = Workbook()
+    output_sheet = output_workbook.active
+
+    output_filename = "twoWeeksEndValue.xlsx"
+    new_file = os.path.join(current_directory, folder_name, output_filename)
+
+    files = [file for file in os.listdir() if file.startswith('亚马逊库存分析')]
+    for file in files:
+        # 加载Excel文件
+        wb = load_workbook(file, read_only=True, data_only=True)
+        for sheet in wb.sheetnames:
+            if sheet.endswith("店"):
+                worksheet = wb[sheet]
+
+                for row in worksheet.iter_rows(min_row=1, min_col=2, max_col=13):  # B列对应的索引是2，M列对应的索引是13
+                    row_data = []
+                    for cell in row:
+                        if cell.data_type == 'f':  # 如果单元格有公式，则复制值而不是公式
+                            row_data.append(cell.value)
+                        else:
+                            row_data.append(cell.value)
+
+                    # 将数据添加到新的Excel表中
+                    output_sheet.append(row_data)
+
+    output_workbook.save(new_file)
+
 
 
 
@@ -496,12 +566,12 @@ if __name__ == '__main__':
     # addNewColumn()
     # mergeFilesByWorkbookName()
     # salesPivotTable()
-    fifteenDaySalesPivotTable()
+    # fifteenDaySalesPivotTable()
     # productPromotionPivotTable()
     # displayPromotionPivotTable()
     # brandPromotionPivotTable()
     # modify_brandPromotionPivotTable()
-    #
+    twoWeeksEndValue()
     #
     #
     #

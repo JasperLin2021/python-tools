@@ -95,7 +95,7 @@ def deleteCells(file, keyword):
     wb.save(file)
 
 
-def get_ad_sku_dict():
+def get_ad_sku_dict(keyword):
     ad_sku_dict = {}
 
     # 打开品牌广告明细sku.xlsx文件
@@ -103,7 +103,7 @@ def get_ad_sku_dict():
     # ws = wb.active
 
     for sheet_name in wb.sheetnames:
-        if sheet_name == "品牌广告":
+        if sheet_name == keyword:
             ws = wb[sheet_name]
 
             # 遍历每行数据，构建字典
@@ -135,3 +135,13 @@ def getNumberDaysBetweenDates(sheetname, keyword):
     date_diff = (date2 - date1).days
 
     return date_diff
+
+def currencyConverter(cell):
+    currency = get_ad_sku_dict("币种汇率")
+    if cell.value is not None and cell.number_format.find("US$") != -1:
+        result = round(float(str(cell.value)) * currency["US"][0], 2)
+        return result
+    if cell.value is not None and str(cell.value).find("CA$") != -1:
+        # print("字符串中包含'CA$'")
+        result = round(float(str(cell.value).split("CA$")[1]) * currency["CA"][0], 2)
+        return result
