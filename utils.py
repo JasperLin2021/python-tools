@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import openpyxl
 from openpyxl.reader.excel import load_workbook
 
@@ -115,3 +117,21 @@ def get_ad_sku_dict():
                     ad_sku_dict[ad_name].append(ad_sku)
 
             return ad_sku_dict
+
+
+def getNumberDaysBetweenDates(sheetname, keyword):
+    # 以"销售"作为分隔符，获取销售以后的所有字符
+    sales_info = sheetname.split(keyword)[1]
+
+    # 以"-"作为分隔符，获取两个日期字符串
+    date_str1, date_str2 = sales_info.split("-")
+
+    # 解析日期字符串为日期对象
+    date_format = "%m.%d"
+    date1 = datetime.strptime(date_str1, date_format).date()
+    date2 = datetime.strptime(date_str2, date_format).date()
+
+    # 计算日期差异
+    date_diff = (date2 - date1).days
+
+    return date_diff

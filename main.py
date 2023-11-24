@@ -6,8 +6,7 @@ from openpyxl.utils import get_column_letter
 from openpyxl.workbook import Workbook
 import pandas as pd
 
-from utils import deleteRow, unmergeCells, deleteCells, get_ad_sku_dict
-
+from utils import deleteRow, unmergeCells, deleteCells, get_ad_sku_dict, getNumberDaysBetweenDates
 
 
 def createDirectory():
@@ -152,6 +151,56 @@ def salesPivotTable():
             worksheet.sheet_view.showGridLines = False
             worksheet.sheet_properties.outlinePr.summaryBelow = True
             worksheet.sheet_properties.outlinePr.summaryRight = True
+
+    # 保存并关闭Excel文件
+    writer.save()
+    writer.close()
+
+    unmergeCells(new_file)
+    deleteRow(new_file, 2)
+
+
+def fifteenDaySalesPivotTable():
+    # 获取当前工作目录
+    current_directory = os.getcwd()
+    # 新建文件夹
+    folder_name = "输出"
+
+    # 读取Excel文件
+    filename = "mergeFilesByWorkbookName.xlsx"
+    excel_file = pd.ExcelFile(os.path.join(current_directory, folder_name, filename))
+
+    # 获取所有工作簿名称
+    sheet_names = excel_file.sheet_names
+
+    # 创建一个新的Excel文件来保存数据透视表
+    output_filename = "Merge_FifteenDaySalesPivotTable.xlsx"
+    new_file = os.path.join(current_directory, folder_name, output_filename)
+    writer = pd.ExcelWriter(new_file, engine='openpyxl')
+
+
+    # 遍历每个工作簿
+    for sheet_name in sheet_names:
+        if sheet_name.startswith("销售"):
+            date_diff = getNumberDaysBetweenDates(sheet_name, "销售")
+
+            if date_diff == 14:
+                # 读取工作簿数据
+                df = excel_file.parse(sheet_name)
+
+                # 创建数据透视表
+                pivot_table = pd.pivot_table(df, values='已订购商品销售额', index=['店铺', 'SKU'], aggfunc='sum')
+
+                # 将数据透视表写入新的工作簿
+                pivot_table.to_excel(writer, sheet_name=sheet_name, index=True, startrow=1)
+
+                # 获取工作簿的worksheet对象
+                worksheet = writer.sheets[sheet_name]
+
+                # 设置数据透视表布局和打印设置
+                worksheet.sheet_view.showGridLines = False
+                worksheet.sheet_properties.outlinePr.summaryBelow = True
+                worksheet.sheet_properties.outlinePr.summaryRight = True
 
     # 保存并关闭Excel文件
     writer.save()
@@ -443,20 +492,21 @@ def summary():
 if __name__ == '__main__':
     print("这个脚本正在直接运行。")
 
-    createDirectory()
-    addNewColumn()
-    mergeFilesByWorkbookName()
-    salesPivotTable()
-    productPromotionPivotTable()
-    displayPromotionPivotTable()
-    brandPromotionPivotTable()
-    modify_brandPromotionPivotTable()
-
-
-
-
-
-
-
-    mergePivotTable()
-    summary()
+    # createDirectory()
+    # addNewColumn()
+    # mergeFilesByWorkbookName()
+    # salesPivotTable()
+    fifteenDaySalesPivotTable()
+    # productPromotionPivotTable()
+    # displayPromotionPivotTable()
+    # brandPromotionPivotTable()
+    # modify_brandPromotionPivotTable()
+    #
+    #
+    #
+    #
+    #
+    #
+    #
+    # mergePivotTable()
+    # summary()
