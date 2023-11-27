@@ -8,6 +8,8 @@ import pandas as pd
 
 from utils import deleteRow, unmergeCells, deleteCells, get_ad_sku_dict, getNumberDaysBetweenDates, currencyConverter
 
+import warnings
+warnings.filterwarnings('ignore', category=UserWarning, module='openpyxl')
 
 def createDirectory():
     # 获取当前工作目录
@@ -433,33 +435,74 @@ def twoWeeksEndValue():
     folder_name = "输出"
     # 新建一个Excel文件用于存储提取的数据
 
-    output_workbook = Workbook()
-    output_sheet = output_workbook.active
-
-    output_filename = "twoWeeksEndValue.xlsx"
-    new_file = os.path.join(current_directory, folder_name, output_filename)
-
     files = [file for file in os.listdir() if file.startswith('亚马逊库存分析')]
     for file in files:
+        output_workbook = Workbook()
+        output_sheet = output_workbook.active
+
+        output_filename = "Merge_EndValue_"+ file
+        new_file = os.path.join(current_directory, folder_name, output_filename)
+
         # 加载Excel文件
         wb = load_workbook(file, read_only=True, data_only=True)
         for sheet in wb.sheetnames:
             if sheet.endswith("店"):
                 worksheet = wb[sheet]
 
-                for row in worksheet.iter_rows(min_row=1, min_col=2, max_col=13):  # B列对应的索引是2，M列对应的索引是13
-                    row_data = []
-                    for cell in row:
-                        if cell.data_type == 'f':  # 如果单元格有公式，则复制值而不是公式
-                            row_data.append(cell.value)
-                        else:
-                            row_data.append(cell.value)
+                # 复制B列和M列的数据到新的Excel表
+                for row in worksheet.iter_rows(min_row=4, min_col=2, max_col=13, values_only=True):
+                    output_sheet.append([sheet, row[0], row[11]])
 
-                    # 将数据添加到新的Excel表中
-                    output_sheet.append(row_data)
 
-    output_workbook.save(new_file)
+        output_sheet.insert_rows(1)  # 在第一行插入新行
+        # 填充标题行
+        output_sheet["A1"] = "店铺"
+        output_sheet["B1"] = "Seller SKU"
+        output_sheet["C1"] = file.split("亚马逊库存分析")[1].split(".")[0] + "期末货值"
+        output_workbook.save(new_file)
 
+
+
+def twoWeeksEndValueEveryShop():
+    # 获取当前工作目录
+    current_directory = os.getcwd()
+    # 新建文件夹
+    folder_name = "输出"
+    # 新建一个Excel文件用于存储提取的数据
+
+    files = [file for file in os.listdir() if file.startswith('亚马逊库存分析')]
+    for file in files:
+        output_workbook = Workbook()
+        output_sheet = output_workbook.active
+        output_sheet.title = "店铺SKU数量表"
+
+        # 设置列名
+        output_sheet["A1"] = "店铺"
+        output_sheet["B1"] = file.split("亚马逊库存分析")[1].split(".")[0] + "总SKU数量"
+
+        # 初始化行数
+        row_number = 2
+
+        output_filename = "Merge_EveryShop_" + file
+        new_file = os.path.join(current_directory, folder_name, output_filename)
+
+        # 加载Excel文件
+        wb = load_workbook(file, read_only=True, data_only=True)
+        for sheet in wb.sheetnames:
+            if sheet.endswith("店"):
+                worksheet = wb[sheet]
+
+                # 获取工作簿名字和B1数据
+                shop_name = sheet
+                sku_count = worksheet['B1'].value
+
+                # 添加数据到新的Excel表
+                output_sheet["A{}".format(row_number)] = shop_name
+                output_sheet["B{}".format(row_number)] = sku_count
+
+                # 增加行数
+                row_number += 1
+        output_workbook.save(new_file)
 
 
 
@@ -562,21 +605,22 @@ def summary():
 if __name__ == '__main__':
     print("这个脚本正在直接运行。")
 
-    # createDirectory()
-    # addNewColumn()
-    # mergeFilesByWorkbookName()
-    # salesPivotTable()
-    # fifteenDaySalesPivotTable()
-    # productPromotionPivotTable()
-    # displayPromotionPivotTable()
-    # brandPromotionPivotTable()
-    # modify_brandPromotionPivotTable()
+    createDirectory()
+    addNewColumn()
+    mergeFilesByWorkbookName()
+    salesPivotTable()
+    fifteenDaySalesPivotTable()
+    productPromotionPivotTable()
+    displayPromotionPivotTable()
+    brandPromotionPivotTable()
+    modify_brandPromotionPivotTable()
     twoWeeksEndValue()
+    twoWeeksEndValueEveryShop()
     #
     #
     #
     #
     #
     #
-    # mergePivotTable()
-    # summary()
+    mergePivotTable()
+    summary()

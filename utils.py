@@ -28,6 +28,12 @@ def deleteRow(file, type, keyword=None):
             for row in rows[1:]:
                 if row[0].value is not None and keyword in row[0].value:
                     ws.delete_rows(row[0].row)
+
+    elif type == 4:
+        for ws in wb.worksheets:
+            for row in reversed(range(1, ws.max_row + 1)):
+                if ws.cell(row=row, column=1).value is not None and keyword in ws.cell(row=row, column=1).value:
+                    ws.delete_rows(row)
     # 保存修改
     wb.save(file)
 
