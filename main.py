@@ -386,7 +386,7 @@ def modify_brandPromotionPivotTable():
     # 新建文件夹
     folder_name = "输出"
 
-    ad_sku_dict = get_ad_sku_dict("品牌广告")
+    ad_sku_dict = get_ad_sku_dict("品牌广告明细sku.xlsx","品牌广告", 0, 1)
 
     # 打开PivotTable_3_BrandPromotion.xlsx文件
     loadFile= os.path.join(current_directory, folder_name, "PivotTable_3_BrandPromotion.xlsx")
@@ -616,11 +616,5 @@ if __name__ == '__main__':
     modify_brandPromotionPivotTable()
     twoWeeksEndValue()
     twoWeeksEndValueEveryShop()
-    #
-    #
-    #
-    #
-    #
-    #
     mergePivotTable()
     summary()
