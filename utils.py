@@ -143,7 +143,7 @@ def getNumberDaysBetweenDates(sheetname, keyword):
     return date_diff
 
 def currencyConverter(cell):
-    currency = get_ad_sku_dict("币种汇率")
+    currency = get_ad_sku_dict("品牌广告明细sku.xlsx", "币种汇率", 0, 1)
     if cell.value is not None and cell.number_format.find("US$") != -1:
         result = round(float(str(cell.value)) * currency["US"][0], 2)
         return result

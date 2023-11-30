@@ -1,4 +1,6 @@
 import os
+import re
+import sys
 
 import openpyxl
 from openpyxl import load_workbook
@@ -27,7 +29,22 @@ def addNewColumn():
     # 新建文件夹
     folder_name = "输出"
     # 获取当前目录下的所有Excel文件
-    files = [file for file in os.listdir() if file.endswith('.xlsx') and file != '品牌广告明细sku.xlsx' and not file.startswith("亚马逊库存分析") ]
+    files = [file for file in os.listdir() if file.endswith('.xlsx') and file != '品牌广告明细sku.xlsx' and file != '成本头程.xlsx' and file != '模板-亚马逊库存分析.xlsx' and not file.startswith("亚马逊库存分析") and not file.startswith("fba库存")]
+
+    error_files = []
+    pattern = r"^(销售|商品推广|展示推广|品牌推广)\d{2}\.\d{2}-\d{2}\.\d{2}$"
+    for file in files:
+        # 加载Excel文件
+        wb = load_workbook(file)
+        for sheet in wb.sheetnames:
+            if not re.match(pattern, sheet):
+                error_files.append(file + sheet)
+
+    print(error_files)
+    if error_files:
+        sys.exit(0)
+
+
     for file in files:
         # 加载Excel文件
         wb = load_workbook(file)
@@ -461,8 +478,6 @@ def twoWeeksEndValue():
         output_sheet["C1"] = file.split("亚马逊库存分析")[1].split(".")[0] + "期末货值"
         output_workbook.save(new_file)
 
-
-
 def twoWeeksEndValueEveryShop():
     # 获取当前工作目录
     current_directory = os.getcwd()
@@ -504,8 +519,104 @@ def twoWeeksEndValueEveryShop():
                 row_number += 1
         output_workbook.save(new_file)
 
+def lastWeekSevenDaySales():
+    # 获取当前工作目录
+    current_directory = os.getcwd()
+    # 新建文件夹
+    folder_name = "输出"
+    # 新建一个Excel文件用于存储提取的数据
+
+    files = [file for file in os.listdir() if file.startswith('亚马逊库存分析')]
+    for file in files:
+        output_workbook = Workbook()
+        output_sheet = output_workbook.active
+
+        output_filename = "Merge_LastWeekSevenDaySales_"+ file
+        new_file = os.path.join(current_directory, folder_name, output_filename)
+
+        # 加载Excel文件
+        wb = load_workbook(file, read_only=True, data_only=True)
+        for sheet in wb.sheetnames:
+            if sheet.endswith("店"):
+                worksheet = wb[sheet]
+
+                # 复制B列和M列的数据到新的Excel表
+                for row in worksheet.iter_rows(min_row=4, min_col=2, max_col=14, values_only=True):
+                    output_sheet.append([sheet, row[0], row[12]])
 
 
+        output_sheet.insert_rows(1)  # 在第一行插入新行
+        # 填充标题行
+        output_sheet["A1"] = "店铺"
+        output_sheet["B1"] = "Seller SKU"
+        output_sheet["C1"] = file.split("亚马逊库存分析")[1].split(".")[0] + "-7天销量"
+        output_workbook.save(new_file)
+
+def lastWeekInventoryIndicators():
+    # 获取当前工作目录
+    current_directory = os.getcwd()
+    # 新建文件夹
+    folder_name = "输出"
+    # 新建一个Excel文件用于存储提取的数据
+
+    files = [file for file in os.listdir() if file.startswith('亚马逊库存分析')]
+    for file in files:
+        output_workbook = Workbook()
+        output_sheet = output_workbook.active
+
+        output_filename = "Merge_LastWeekInventoryIndicators_"+ file
+        new_file = os.path.join(current_directory, folder_name, output_filename)
+
+        # 加载Excel文件
+        wb = load_workbook(file, read_only=True, data_only=True)
+        for sheet in wb.sheetnames:
+            if sheet.endswith("店"):
+                worksheet = wb[sheet]
+
+                # 复制B列和M列的数据到新的Excel表
+                for row in worksheet.iter_rows(min_row=4, min_col=2, max_col=20, values_only=True):
+                    output_sheet.append([sheet, row[0], row[18]])
+
+
+        output_sheet.insert_rows(1)  # 在第一行插入新行
+        # 填充标题行
+        output_sheet["A1"] = "店铺"
+        output_sheet["B1"] = "Seller SKU"
+        output_sheet["C1"] = file.split("亚马逊库存分析")[1].split(".")[0] + "-库存指标"
+        output_workbook.save(new_file)
+
+def lastWeekSevenDayACOS():
+    # 获取当前工作目录
+    current_directory = os.getcwd()
+    # 新建文件夹
+    folder_name = "输出"
+    # 新建一个Excel文件用于存储提取的数据
+
+    files = [file for file in os.listdir() if file.startswith('亚马逊库存分析')]
+    for file in files:
+        output_workbook = Workbook()
+        output_sheet = output_workbook.active
+
+        output_filename = "Merge_LastWeekSevenDayACOS_"+ file
+        new_file = os.path.join(current_directory, folder_name, output_filename)
+
+        # 加载Excel文件
+        wb = load_workbook(file, read_only=True, data_only=True)
+        for sheet in wb.sheetnames:
+            if sheet.endswith("店"):
+                worksheet = wb[sheet]
+
+                # 复制B列和M列的数据到新的Excel表
+                for row in worksheet.iter_rows(min_row=4, min_col=2, max_col=28, values_only=True):
+                    output_sheet.append([sheet, row[0], row[26]])
+
+
+        output_sheet.insert_rows(1)  # 在第一行插入新行
+        # 填充标题行
+        output_sheet["A1"] = "店铺"
+        output_sheet["B1"] = "Seller SKU"
+        output_sheet["C1"] = file.split("亚马逊库存分析")[1].split(".")[0] + "-7天ACOS"
+        output_workbook.save(new_file)
 
 def mergePivotTable():
     # 获取当前工作目录
@@ -561,7 +672,6 @@ def mergePivotTable():
     deleteRow(new_file, 1)
     deleteRow(new_file, 3, '店铺')
 
-
 def summary():
     # 获取当前工作目录
     current_directory = os.getcwd()
@@ -605,7 +715,7 @@ def summary():
 if __name__ == '__main__':
     print("这个脚本正在直接运行。")
 
-    createDirectory()
+    # createDirectory()
     addNewColumn()
     mergeFilesByWorkbookName()
     salesPivotTable()
@@ -616,5 +726,11 @@ if __name__ == '__main__':
     modify_brandPromotionPivotTable()
     twoWeeksEndValue()
     twoWeeksEndValueEveryShop()
+    lastWeekSevenDaySales()
+    lastWeekInventoryIndicators()
+    lastWeekSevenDayACOS()
+
+
+
     mergePivotTable()
     summary()

@@ -1,10 +1,12 @@
 import os
 import re
+from datetime import datetime
 
 import pandas as pd
 
 import openpyxl
 from openpyxl.reader.excel import load_workbook
+from openpyxl.styles import Font
 
 from utils import deleteRow, get_ad_sku_dict
 
@@ -92,6 +94,8 @@ def vlookupCostHeadProcess():
 
 
 def arrangeFBA():
+    current_date = datetime.now().date()
+    first_day_of_current_month = current_date.replace(day=1)
     # 获取当前工作目录
     current_directory = os.getcwd()
     # 新建文件夹
@@ -109,9 +113,26 @@ def arrangeFBA():
 
     Summary_filename = "汇总.xlsx"
     Summary_file = os.path.join(current_directory, folder_name1, Summary_filename)
-    Seven_day_sales_dict = get_ad_sku_dict(Summary_file, "Sheet1", 43, 44)
-    fifteen_day_sales_dict = get_ad_sku_dict(Summary_file, "Sheet1", 48, 49)
-    thirty_day_sales_dict = get_ad_sku_dict(Summary_file, "Sheet1", 53, 54)
+
+    Seven_day_sales_dict = get_ad_sku_dict(Summary_file, "Sheet1", 73, 74)
+    fifteen_day_sales_dict = get_ad_sku_dict(Summary_file, "Sheet1", 78, 79)
+    thirty_day_sales_dict = get_ad_sku_dict(Summary_file, "Sheet1", 83, 84)
+
+    last_week_seven_day_sales_dict = get_ad_sku_dict(Summary_file, "Sheet1", 50, 51)
+    last_week_inventory_indicators_dict = get_ad_sku_dict(Summary_file, "Sheet1", 30, 31)
+
+    Seven_day_advertisement_cost = get_ad_sku_dict(Summary_file, "Sheet1", 55, 57)
+    Fifteen_day_advertisement_cost = get_ad_sku_dict(Summary_file, "Sheet1", 61, 63)
+    Thirty_day_advertisement_cost = get_ad_sku_dict(Summary_file, "Sheet1", 67, 69)
+
+    Seven_day_total_sales = get_ad_sku_dict(Summary_file, "Sheet1", 55, 56)
+    Fifteen_day_total_sales = get_ad_sku_dict(Summary_file, "Sheet1", 61, 62)
+    Thirty_day_total_sales = get_ad_sku_dict(Summary_file, "Sheet1", 67, 68)
+
+    last_week_seven_day_ACOS_dict = get_ad_sku_dict(Summary_file, "Sheet1", 40, 41)
+
+    Last_week_end_value = get_ad_sku_dict(Summary_file, "Sheet1", 6, 7)
+    Last_2week_end_value = get_ad_sku_dict(Summary_file, "Sheet1", 1, 2)
 
 
 
@@ -125,7 +146,7 @@ def arrangeFBA():
         sheet = wb.active
 
         pattern = r'Y(\d+)'
-        for row in sheet.iter_rows(min_row=1, values_only=True):
+        for row in sheet.iter_rows(min_row=2, values_only=True):
             match = re.search(pattern, row[1])
             if match:
                 data_b = match.group(1) + "店"
@@ -141,30 +162,170 @@ def arrangeFBA():
             data_ad = row[29]  # 获取AD列数据
             data_ak = row[36]  # 获取AK列数据
 
+            start_selling_date = "2022/12/27"
             available_stock = data_z+data_aa+data_ac+data_ad+data_ak
-            average_cost = round(CostHeadProcess_dict.get(data_d, [0])[0], 2)
-            end_value = available_stock * average_cost
+            average_cost_raw = CostHeadProcess_dict.get(data_d, [0])[0]
+            average_cost = round(average_cost_raw, 2)
+            end_value_raw = available_stock * average_cost_raw
+            end_value = round(end_value_raw, 2)
             Seven_day_sales = Seven_day_sales_dict.get(data_d, [0])[0]
             fifteen_day_sales = fifteen_day_sales_dict.get(data_d, [0])[0]
             thirty_day_sales = thirty_day_sales_dict.get(data_d, [0])[0]
+            last_week_seven_day_sales = last_week_seven_day_sales_dict.get(data_d, [0])[0]
+            sales_difference_between_two_weeks_and_seven_days = Seven_day_sales - last_week_seven_day_sales
+            available_days_for_sale_t30 = round(float(available_stock) / ((float(Seven_day_sales)/7 + float(fifteen_day_sales)/15 + float(thirty_day_sales)/30)/3), 0)  if  (float(Seven_day_sales)/7 + float(fifteen_day_sales)/15 + float(thirty_day_sales)/30) != 0 else '-'
+            sell_out_indicator_within_30_days = round(float(available_stock) / ((float(Seven_day_sales)/7 + float(fifteen_day_sales)/15 + float(thirty_day_sales)/30)/3) / 30, 2) if available_days_for_sale_t30 != '-' else '-'
+            last_week_inventory_indicators = round(float(last_week_inventory_indicators_dict.get(data_d, ['-'])[0]), 2) if last_week_inventory_indicators_dict.get(data_d, ['-'])[0] != '-' else '-'
+            comparison_between_this_week_and_last_week = round((float(available_stock) / ((float(Seven_day_sales)/7 + float(fifteen_day_sales)/15 + float(thirty_day_sales)/30)/3) / 30) \
+                                                         - \
+                                                         (float(last_week_inventory_indicators_dict.get(data_d, ['-'])[0])), 2) \
+                                                            if sell_out_indicator_within_30_days != '-' and last_week_inventory_indicators != '-' else '-'
+
+
+
+
+            target_date = datetime.strptime(start_selling_date, "%Y/%m/%d").date()
+            diff_days = (target_date - first_day_of_current_month).days
+            if diff_days >= 0:
+                inventory_alarm_in_the_past_7_days = "本月刚到货"
+            elif available_stock > 0 and Seven_day_sales == 0:
+                inventory_alarm_in_the_past_7_days = "有库存无销量"
+            elif available_stock == 0 and Seven_day_sales == 0:
+                inventory_alarm_in_the_past_7_days = "无库存无销量"
+            elif available_stock == 0 and Seven_day_sales:
+                inventory_alarm_in_the_past_7_days = "无库存有销量"
+            elif (available_stock / (Seven_day_sales/7))/30 <= 0.5:
+                inventory_alarm_in_the_past_7_days = "库存过低"
+            elif (available_stock / (Seven_day_sales/7))/30 <= 1.5:
+                inventory_alarm_in_the_past_7_days = "正常"
+            else:
+                inventory_alarm_in_the_past_7_days = "库存过高"
+
+
+            if diff_days >= 0 and available_stock > 0:
+                inventory_alarm_in_the_past_7_days = "本月刚到货"
+            elif sell_out_indicator_within_30_days == '-' and available_stock > 0:
+                inventory_alarm_over_45_days = "有库存无销量"
+            elif sell_out_indicator_within_30_days == '-' and available_stock == 0:
+                inventory_alarm_over_45_days = "无库存无销量"
+            elif sell_out_indicator_within_30_days <= 0.5 and available_stock == 0:
+                inventory_alarm_over_45_days = "无库存有销量"
+            elif sell_out_indicator_within_30_days <= 0.5:
+                inventory_alarm_over_45_days = "库存过低"
+            elif sell_out_indicator_within_30_days <= 1.5:
+                inventory_alarm_over_45_days = "正常"
+            else:
+                inventory_alarm_over_45_days = "库存过高"
+
+            seven_day_advertisement_cost_raw = 0
+            for key in Seven_day_advertisement_cost:
+                if key == data_d:
+                    seven_day_advertisement_cost_raw = sum(Seven_day_advertisement_cost.get(key))
+            seven_day_advertisement_cost = round(seven_day_advertisement_cost_raw, 2)
+
+            fifteen_day_advertisement_cost_raw = 0
+            for key in Fifteen_day_advertisement_cost:
+                if key == data_d:
+                    fifteen_day_advertisement_cost_raw = sum(Fifteen_day_advertisement_cost.get(key))
+            fifteen_day_advertisement_cost = round(fifteen_day_advertisement_cost_raw, 2)
+
+            thirty_day_advertisement_cost_raw = 0
+            for key in Thirty_day_advertisement_cost:
+                if key == data_d:
+                    thirty_day_advertisement_cost_raw = sum(Thirty_day_advertisement_cost.get(key))
+            thirty_day_advertisement_cost = round(thirty_day_advertisement_cost_raw, 2)
+
+            seven_day_total_sum_sales = 0
+            seven_day_acos_raw = "-"
+            seven_day_acos = "-"
+            for key in Seven_day_total_sales:
+                if key == data_d:
+                    seven_day_total_sum_sales = sum(Seven_day_total_sales.get(key))
+                    seven_day_acos_raw = seven_day_advertisement_cost_raw / seven_day_total_sum_sales if seven_day_total_sum_sales != 0 and seven_day_advertisement_cost_raw != 0 else '-'
+                    seven_day_acos =  "{:.2f}".format(round(seven_day_acos_raw,4) * 100) + "%" if seven_day_total_sum_sales != 0 and seven_day_advertisement_cost_raw != 0 else '-'
+
+
+            last_week_seven_day_ACOS_raw = last_week_seven_day_ACOS_dict.get(data_d, ['-'])[0]
+            last_week_seven_day_ACOS = "{:.2f}".format(round(last_week_seven_day_ACOS_raw, 4) * 100) + "%" if last_week_seven_day_ACOS_raw != '-' else '-'
+
+            two_week_ACOS_difference = "{:.2f}".format(round((seven_day_acos_raw - last_week_seven_day_ACOS_raw), 4) * 100) + "%" if seven_day_acos_raw != '-' and last_week_seven_day_ACOS_raw != '-' else '-'
+
+            fifteen_day_total_sum_sales = 0
+            fifteen_day_acos_raw = "-"
+            fifteen_day_acos = "-"
+            for key in Fifteen_day_total_sales:
+                if key == data_d:
+                    fifteen_day_total_sum_sales = sum(Fifteen_day_total_sales.get(key))
+                    fifteen_day_acos_raw = fifteen_day_advertisement_cost_raw / fifteen_day_total_sum_sales if fifteen_day_total_sum_sales != 0 and fifteen_day_advertisement_cost_raw != 0 else '-'
+                    fifteen_day_acos = "{:.2f}".format(round(fifteen_day_acos_raw,
+                                                           4) * 100) + "%" if fifteen_day_total_sum_sales != 0 and fifteen_day_advertisement_cost_raw != 0 else '-'
+
+            thirty_day_total_sum_sales = 0
+            thirty_day_acos_raw = "-"
+            thirty_day_acos = "-"
+            for key in Thirty_day_total_sales:
+                if key == data_d:
+                    thirty_day_total_sum_sales = sum(Thirty_day_total_sales.get(key))
+                    thirty_day_acos_raw = thirty_day_advertisement_cost_raw / thirty_day_total_sum_sales if thirty_day_total_sum_sales != 0 and thirty_day_advertisement_cost_raw != 0 else '-'
+                    thirty_day_acos = "{:.2f}".format(round(thirty_day_acos_raw,
+                                                            4) * 100) + "%" if thirty_day_total_sum_sales != 0 and thirty_day_advertisement_cost_raw != 0 else '-'
+
+            seven_day_sales_cost_raw = average_cost_raw * Seven_day_sales
+            seven_day_sales_cost = round(seven_day_sales_cost_raw, 2)
+            fifteen_day_sales_cost_raw = average_cost_raw * fifteen_day_sales
+            fifteen_day_sales_cost = round(fifteen_day_sales_cost_raw, 2)
+
+            last_week_end_value_raw = 0
+            for key in Last_week_end_value:
+                if key == data_d:
+                    last_week_end_value_raw = sum(Last_week_end_value.get(key))
+            seven_day_inventory_turnover_rate = round((seven_day_sales_cost_raw / ((last_week_end_value_raw + end_value_raw) / 2)),1) if last_week_end_value_raw + end_value_raw !=0 else '-'
+
+            last_2week_end_value_raw = 0
+            for key in Last_2week_end_value:
+                if key == data_d:
+                    last_2week_end_value_raw = sum(Last_2week_end_value.get(key))
+            fifteen_day_inventory_turnover_rate = round((fifteen_day_sales_cost_raw / ((last_2week_end_value_raw + end_value_raw) / 2)),1) if last_2week_end_value_raw + end_value_raw !=0 else '-'
+
 
 
             # 复制到目标文件，并在D列和F列之间插入空白列
             target_sheet.append(
-                [data_b, data_d, data_m, '', data_f, data_z, data_aa, data_ac, data_ad, data_ak,
+                [data_b, data_d, data_m, start_selling_date, data_f, data_z, data_aa, data_ac, data_ad, data_ak,
                  available_stock,
                  average_cost,
                  end_value,
                  Seven_day_sales,
                  fifteen_day_sales,
-                 thirty_day_sales
+                 thirty_day_sales,
+                 last_week_seven_day_sales,
+                 sales_difference_between_two_weeks_and_seven_days,
+                 available_days_for_sale_t30,
+                 sell_out_indicator_within_30_days,
+                 last_week_inventory_indicators,
+                 comparison_between_this_week_and_last_week,
+                 inventory_alarm_in_the_past_7_days,
+                 inventory_alarm_over_45_days,
+                 seven_day_advertisement_cost,
+                 fifteen_day_advertisement_cost,
+                 thirty_day_advertisement_cost,
+                 seven_day_acos,
+                 last_week_seven_day_ACOS,
+                 two_week_ACOS_difference,
+                 fifteen_day_acos,
+                 thirty_day_acos,
+                 seven_day_inventory_turnover_rate,
+                 fifteen_day_inventory_turnover_rate,
+                 '',
+                 '',
+                 seven_day_sales_cost,
+                 fifteen_day_sales_cost
                  ])
 
 
     # 保存目标文件
 
     target_workbook.save(new_file)
-    deleteRow(new_file, 2)
     deleteRow(new_file, 3, "小满1店")
 
 
@@ -185,7 +346,7 @@ def copyArrangeFBA():
     source_sheet = source_workbook.active
 
     # 打开目标文件
-    target_file = "亚马逊库存分析模板.xlsx"
+    target_file = "模板-亚马逊库存分析.xlsx"
     target_workbook = openpyxl.load_workbook(target_file)
     target_sheet = target_workbook.active
 
