@@ -4,7 +4,7 @@ import openpyxl
 from openpyxl.reader.excel import load_workbook
 
 
-def deleteRow(file, type, keyword=None):
+def deleteRow(file, type, keyword=None, column=None):
     wb = load_workbook(file)
 
     # 删除空白行
@@ -29,10 +29,11 @@ def deleteRow(file, type, keyword=None):
                 if row[0].value is not None and keyword in row[0].value:
                     ws.delete_rows(row[0].row)
 
+    #从最后一行开始遍历每一行，如果某行的某列单元格的值不为空且包含指定关键字（keyword），则删除该行。
     elif type == 4:
         for ws in wb.worksheets:
             for row in reversed(range(1, ws.max_row + 1)):
-                if ws.cell(row=row, column=1).value is not None and keyword in ws.cell(row=row, column=1).value:
+                if ws.cell(row=row, column=column).value is not None and keyword in ws.cell(row=row, column=column).value:
                     ws.delete_rows(row)
     # 保存修改
     wb.save(file)

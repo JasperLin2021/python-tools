@@ -29,7 +29,7 @@ def addNewColumn():
     # 新建文件夹
     folder_name = "输出"
     # 获取当前目录下的所有Excel文件
-    files = [file for file in os.listdir() if file.endswith('.xlsx') and file != '品牌广告明细sku.xlsx' and file != '成本头程.xlsx' and file != '模板-亚马逊库存分析.xlsx' and not file.startswith("亚马逊库存分析") and not file.startswith("fba库存")]
+    files = [file for file in os.listdir() if file.endswith('.xlsx') and file != '品牌广告明细sku.xlsx' and file != '成本头程.xlsx' and file != '模板-亚马逊库存分析.xlsx' and not file.startswith("亚马逊") and not file.startswith("fba库存")]
 
     error_files = []
     pattern = r"^(销售|商品推广|展示推广|品牌推广)\d{2}\.\d{2}-\d{2}\.\d{2}$"
