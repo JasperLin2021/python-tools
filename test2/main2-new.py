@@ -414,7 +414,7 @@ def copyArrangeFBA():
 
     rule1 = IconSetRule('3Arrows', "num", [-1, 0, 1], showValue=True, reverse=False)
     rule2 = IconSetRule('3Arrows', "num", [0, 0, 0.0000000001], showValue=True, reverse=False)
-    rule3 = IconSetRule('3Arrows', "num", [0, 0, 0], showValue=True, reverse=False)
+    rule3 = IconSetRule('3Arrows', "num", [0, 0, 0.0000000001], showValue=True, reverse=False)
 
     target_sheet.conditional_formatting.add(f'S4:S{target_sheet.max_row}', rule1)
     target_sheet.conditional_formatting.add(f'W4:W{target_sheet.max_row}', rule2)
@@ -487,11 +487,11 @@ def summary():
 if __name__ == '__main__':
     print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
-    createDirectory("输出2")
+    # createDirectory("输出2")
     createDirectory("输出3")
-    arrangeCostHeadProcess_Site()
-    vlookupCostHeadProcess_Site()
-    arrangeFBA()
+    # arrangeCostHeadProcess_Site()
+    # vlookupCostHeadProcess_Site()
+    # arrangeFBA()
     copyArrangeFBA()
     summary()
     print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
