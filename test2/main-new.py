@@ -46,7 +46,7 @@ def addNewColumn():
             if not re.match(pattern, sheet):
                 error_files.append(file + sheet)
 
-    # print(error_files)
+    print(error_files)
     if error_files:
         sys.exit(0)
 
@@ -468,12 +468,12 @@ def twoWeeksEndValue():
         # 加载Excel文件
         wb = load_workbook(file, read_only=True, data_only=True)
         for sheet in wb.sheetnames:
-            if sheet.endswith("店"):
+            if sheet.endswith("库存分析"):
                 worksheet = wb[sheet]
 
                 # 复制B列和M列的数据到新的Excel表
-                for row in worksheet.iter_rows(min_row=4, min_col=2, max_col=13, values_only=True):
-                    output_sheet.append([sheet, row[0], row[11]])
+                for row in worksheet.iter_rows(min_row=4, min_col=2, max_col=14, values_only=True):
+                    output_sheet.append([row[0], row[1], row[12]])
 
         output_sheet.insert_rows(1)  # 在第一行插入新行
         # 填充标题行
@@ -491,7 +491,18 @@ def twoWeeksEndValueEveryShop():
     # 新建一个Excel文件用于存储提取的数据
 
     files = [file for file in os.listdir() if file.startswith('亚马逊库存分析')]
+
+
+
     for file in files:
+        shop_and_salesperson = get_ad_sku_dict(file,"亚马逊库存分析", 1 ,0)
+        filtered_shop_and_salesperson = {key: value for key, value in shop_and_salesperson.items() if key is not None and key.endswith('店')}
+
+        filtered_dict = {}
+        for key, value in filtered_shop_and_salesperson.items():
+            filtered_values = [v for v in value if v != '-']
+            filtered_dict[key] = len(filtered_values)
+
         output_workbook = Workbook()
         output_sheet = output_workbook.active
         output_sheet.title = "店铺SKU数量表"
@@ -507,14 +518,14 @@ def twoWeeksEndValueEveryShop():
         new_file = os.path.join(current_directory, folder_name, output_filename)
 
         # 加载Excel文件
-        wb = load_workbook(file, read_only=True, data_only=True)
-        for sheet in wb.sheetnames:
-            if sheet.endswith("店"):
-                worksheet = wb[sheet]
+        # wb = load_workbook(file, read_only=True, data_only=True)
+        for key, value in filtered_dict.items():
+            # if sheet.endswith("店"):
+            #     worksheet = wb[sheet]
 
                 # 获取工作簿名字和B1数据
-                shop_name = sheet
-                sku_count = worksheet['B1'].value
+                shop_name = key
+                sku_count = value
 
                 # 添加数据到新的Excel表
                 output_sheet["A{}".format(row_number)] = shop_name
@@ -543,12 +554,12 @@ def lastWeekSevenDaySales():
         # 加载Excel文件
         wb = load_workbook(file, read_only=True, data_only=True)
         for sheet in wb.sheetnames:
-            if sheet.endswith("店"):
+            if sheet.endswith("库存分析"):
                 worksheet = wb[sheet]
 
                 # 复制B列和M列的数据到新的Excel表
-                for row in worksheet.iter_rows(min_row=4, min_col=2, max_col=14, values_only=True):
-                    output_sheet.append([sheet, row[0], row[12]])
+                for row in worksheet.iter_rows(min_row=4, min_col=2, max_col=15, values_only=True):
+                    output_sheet.append([row[0], row[1], row[13]])
 
         output_sheet.insert_rows(1)  # 在第一行插入新行
         # 填充标题行
@@ -576,12 +587,12 @@ def lastWeekInventoryIndicators():
         # 加载Excel文件
         wb = load_workbook(file, read_only=True, data_only=True)
         for sheet in wb.sheetnames:
-            if sheet.endswith("店"):
+            if sheet.endswith("库存分析"):
                 worksheet = wb[sheet]
 
                 # 复制B列和M列的数据到新的Excel表
-                for row in worksheet.iter_rows(min_row=4, min_col=2, max_col=20, values_only=True):
-                    output_sheet.append([sheet, row[0], row[18]])
+                for row in worksheet.iter_rows(min_row=4, min_col=2, max_col=21, values_only=True):
+                    output_sheet.append([row[0], row[1], row[19]])
 
         output_sheet.insert_rows(1)  # 在第一行插入新行
         # 填充标题行
@@ -609,12 +620,12 @@ def lastWeekSevenDayACOS():
         # 加载Excel文件
         wb = load_workbook(file, read_only=True, data_only=True)
         for sheet in wb.sheetnames:
-            if sheet.endswith("店"):
+            if sheet.endswith("库存分析"):
                 worksheet = wb[sheet]
 
                 # 复制B列和M列的数据到新的Excel表
-                for row in worksheet.iter_rows(min_row=4, min_col=2, max_col=28, values_only=True):
-                    output_sheet.append([sheet, row[0], row[26]])
+                for row in worksheet.iter_rows(min_row=4, min_col=2, max_col=29, values_only=True):
+                    output_sheet.append([row[0], row[1], row[27]])
 
         output_sheet.insert_rows(1)  # 在第一行插入新行
         # 填充标题行
@@ -721,21 +732,21 @@ def summary():
 if __name__ == '__main__':
     print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
-    createDirectory()
-    addNewColumn()
-    mergeFilesByWorkbookName()
-    salesPivotTable()
-    fifteenDaySalesPivotTable()
-    productPromotionPivotTable()
-    displayPromotionPivotTable()
-    brandPromotionPivotTable()
-    modify_brandPromotionPivotTable()
-    twoWeeksEndValue()
-    twoWeeksEndValueEveryShop()
-    lastWeekSevenDaySales()
-    lastWeekInventoryIndicators()
-    lastWeekSevenDayACOS()
-    mergePivotTable()
+    # createDirectory()
+    # addNewColumn()
+    # mergeFilesByWorkbookName()
+    # salesPivotTable()
+    # fifteenDaySalesPivotTable()
+    # productPromotionPivotTable()
+    # displayPromotionPivotTable()
+    # brandPromotionPivotTable()
+    # modify_brandPromotionPivotTable()
+    # twoWeeksEndValue()
+    # twoWeeksEndValueEveryShop()
+    # lastWeekSevenDaySales()
+    # lastWeekInventoryIndicators()
+    # lastWeekSevenDayACOS()
+    # mergePivotTable()
     summary()
 
     print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))

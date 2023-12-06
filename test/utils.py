@@ -146,9 +146,9 @@ def getNumberDaysBetweenDates(sheetname, keyword):
 def currencyConverter(cell):
     currency = get_ad_sku_dict("品牌广告明细sku.xlsx", "币种汇率", 0, 1)
     if cell.value is not None and cell.number_format.find("US$") != -1:
-        result = float(str(cell.value)) * currency["US"][0]
+        result = round(float(str(cell.value)) * currency["US"][0], 2)
         return result
     if cell.value is not None and str(cell.value).find("CA$") != -1:
         # print("字符串中包含'CA$'")
-        result = float(str(cell.value).split("CA$")[1]) * currency["CA"][0]
+        result = round(float(str(cell.value).split("CA$")[1]) * currency["CA"][0], 2)
         return result
