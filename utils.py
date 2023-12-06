@@ -125,6 +125,34 @@ def get_ad_sku_dict(file, sheetname, keycolum, valuecolum):
 
             return ad_sku_dict
 
+def get_sku_site_fee_dict(file, sheetname, skucolum, sitecolum, fbadeliveryfeecolum):
+    sku_site_fee_dict = {}
+
+    # 打开品牌广告明细sku.xlsx文件
+    wb = openpyxl.load_workbook(file)
+    # ws = wb.active
+
+    for sheet_name in wb.sheetnames:
+        if sheet_name == sheetname:
+            ws = wb[sheet_name]
+
+            # 遍历每行数据，构建字典
+            for row in ws.iter_rows(min_row=2, values_only=True):
+                ad_sku = row[skucolum]
+                ad_site= row[sitecolum]
+                ad_fba_delivery_fee = row[fbadeliveryfeecolum]
+
+                ad_site_dict = {}
+                ad_site_dict[ad_site] = ad_fba_delivery_fee
+                if ad_sku not in sku_site_fee_dict:
+                    sku_site_fee_dict[ad_sku] = ad_site_dict
+                else:
+                    value = sku_site_fee_dict.get(ad_sku, {})
+                    value.update(ad_site_dict)
+                    sku_site_fee_dict[ad_sku] = value
+
+
+            return sku_site_fee_dict
 
 def getNumberDaysBetweenDates(sheetname, keyword):
     # 以"销售"作为分隔符，获取销售以后的所有字符

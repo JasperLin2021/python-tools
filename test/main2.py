@@ -9,7 +9,7 @@ from openpyxl.formatting.rule import IconSetRule
 from openpyxl.reader.excel import load_workbook
 from openpyxl.styles import Font, Alignment, Border, Side
 
-from utils import deleteRow, get_ad_sku_dict
+from utils import deleteRow, get_ad_sku_dict, get_sku_site_fee_dict
 from openpyxl import load_workbook, Workbook
 
 
@@ -126,6 +126,10 @@ def arrangeFBA():
     Startsellingdate_filename = "亚马逊产品开始出售日期.xlsx"
     Startsellingdate_dict = get_ad_sku_dict(Startsellingdate_filename, "Sheet1", 1, 3)
     Salesperson_dict = get_ad_sku_dict(Startsellingdate_filename, "Sheet1", 1, 4)
+
+    #FBA配送费
+    FBA_delivery_fee_filename = "FBA配送费.xlsx"
+    FBA_delivery_fee_dict = get_sku_site_fee_dict(FBA_delivery_fee_filename, "FBA配送费", 1, 3, 2)
 
     Summary_filename = "汇总.xlsx"
     Summary_file = os.path.join(current_directory, folder_name1, Summary_filename)
@@ -309,12 +313,15 @@ def arrangeFBA():
 
             site = Site_dict.get(data_d, ['-'])[0]
 
+            # print(data_d)
+            fba_delivery_fee = FBA_delivery_fee_dict.get(data_d).get(site) if FBA_delivery_fee_dict.get(data_d) != None else '-'
+
             gross_margin_raw = (sum(Fifteen_day_total_sales.get(data_d)) * 0.85 - (
                         average_cost_raw + HeadProcess_dict.get(data_d, [0])[0]) * fifteen_day_sales -
                                 Currency_exchange_rate_dict.get(site, [0])[0] *
-                                (fifteen_day_advertisement_cost_raw + 3.99 * fifteen_day_sales)) / sum(
+                                (fifteen_day_advertisement_cost_raw + fba_delivery_fee * fifteen_day_sales)) / sum(
                 Fifteen_day_total_sales.get(data_d)) if Fifteen_day_total_sales.get(data_d) != None and sum(
-                Fifteen_day_total_sales.get(data_d)) != 0 else '-'
+                Fifteen_day_total_sales.get(data_d)) != 0 and fba_delivery_fee != '-' else '-'
 
             gross_margin = round(gross_margin_raw, 4) if gross_margin_raw != '-' else '-'
 
@@ -414,7 +421,7 @@ def copyArrangeFBA():
 
     rule1 = IconSetRule('3Arrows', "num", [-1, 0, 1], showValue=True, reverse=False)
     rule2 = IconSetRule('3Arrows', "num", [0, 0, 0.0000000001], showValue=True, reverse=False)
-    rule3 = IconSetRule('3Arrows', "num", [0, 0, 0], showValue=True, reverse=False)
+    rule3 = IconSetRule('3Arrows', "num", [0, 0, 0.0000000001], showValue=True, reverse=False)
 
     target_sheet.conditional_formatting.add(f'S4:S{target_sheet.max_row}', rule1)
     target_sheet.conditional_formatting.add(f'W4:W{target_sheet.max_row}', rule2)
@@ -461,6 +468,10 @@ def summary():
     # 获取第一个工作簿
     ws4 = wb4.active
 
+    wb5 = load_workbook("FBA配送费.xlsx")
+    # 获取第一个工作簿
+    ws5 = wb5.active
+
     new_ws = wb.create_sheet(title='汇总')
     for row in ws1.iter_rows(values_only=True):
         new_ws.append(row)
@@ -481,16 +492,20 @@ def summary():
     for row in ws4.iter_rows(values_only=True):
         new_ws.append(row)
 
+    new_ws = wb.create_sheet(title='FBA配送费')
+    for row in ws5.iter_rows(values_only=True):
+        new_ws.append(row)
+
     wb.save(os.path.join(current_directory, folder_name3, '亚马逊库存分析.xlsx'))
 
 
 if __name__ == '__main__':
     print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
-    createDirectory("输出2")
-    createDirectory("输出3")
-    arrangeCostHeadProcess_Site()
-    vlookupCostHeadProcess_Site()
+    # createDirectory("输出2")
+    # createDirectory("输出3")
+    # arrangeCostHeadProcess_Site()
+    # vlookupCostHeadProcess_Site()
     arrangeFBA()
     copyArrangeFBA()
     summary()
