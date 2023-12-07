@@ -8,6 +8,8 @@ from openpyxl.styles import Border, Side, Font, Alignment
 from utils import deleteRow, get_ad_sku_dict
 import pandas as pd
 
+import pyautogui
+
 
 def filter():
     # 获取当前工作目录
@@ -87,6 +89,10 @@ def filter():
 
         # 保存目标文件
         target_workbook.save(salesperson_file)
+
+    message = "完成！"
+    title = "生成库存分析明细表"
+    pyautogui.alert(message, title)
 
 
 if __name__ == '__main__':

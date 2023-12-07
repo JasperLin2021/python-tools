@@ -1,4 +1,4 @@
-def
+import tkinter as tk
 
 
 

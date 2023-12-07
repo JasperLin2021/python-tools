@@ -6,12 +6,12 @@ import pandas as pd
 
 import openpyxl
 from openpyxl.formatting.rule import IconSetRule
-from openpyxl.reader.excel import load_workbook
 from openpyxl.styles import Font, Alignment, Border, Side
 
 from utils import deleteRow, get_ad_sku_dict, get_sku_site_fee_dict
-from openpyxl import load_workbook, Workbook
+from openpyxl import load_workbook
 
+import pyautogui
 
 def createDirectory(folder_name):
     # 获取当前工作目录
@@ -498,6 +498,11 @@ def summary():
         new_ws.append(row)
 
     wb.save(os.path.join(current_directory, folder_name3, '亚马逊库存分析.xlsx'))
+
+    message = "完成！"
+    title = "生成库存分析总表"
+    pyautogui.alert(message, title)
+
 
 
 if __name__ == '__main__':

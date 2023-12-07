@@ -1,9 +1,6 @@
 import os
 import re
-import sys
 from datetime import datetime
-
-import openpyxl
 from openpyxl import load_workbook
 from openpyxl.utils import get_column_letter
 from openpyxl.workbook import Workbook
@@ -12,9 +9,9 @@ import pandas as pd
 from utils import deleteRow, unmergeCells, deleteCells, get_ad_sku_dict, getNumberDaysBetweenDates, currencyConverter
 
 import warnings
-
 warnings.filterwarnings('ignore', category=UserWarning, module='openpyxl')
 
+import pyautogui
 
 def createDirectory():
     # 获取当前工作目录
@@ -718,6 +715,11 @@ def summary():
 
     # 删除指定单元格
     deleteCells(new_file, "NewColumn")
+
+    message = "完成！"
+    title = "生成汇总表"
+    pyautogui.alert(message, title)
+
 
 
 if __name__ == '__main__':
