@@ -35,7 +35,7 @@ def addNewColumn():
     # 获取当前目录下的所有Excel文件
     files = [file for file in os.listdir() if file.endswith(
         '.xlsx') and file != '品牌广告明细sku.xlsx' and file != '成本头程.xlsx' and file != '模板-亚马逊库存分析.xlsx' and not file.startswith(
-        "亚马逊") and not file.startswith("fba库存")]
+        "亚马逊") and not file.startswith("fba")]
 
     error_files = []
     pattern = r"^(销售|商品推广|展示推广|品牌推广)\d{2}\.\d{2}-\d{2}\.\d{2}$"
@@ -46,9 +46,9 @@ def addNewColumn():
             if not re.match(pattern, sheet):
                 error_files.append(file + sheet)
 
-    print(error_files)
+    # print(error_files)
     if error_files:
-        sys.exit(0)
+        raise ValueError(str(error_files) + "工作簿命名有误")
 
     for file in files:
         # 加载Excel文件
@@ -732,21 +732,21 @@ def summary():
 if __name__ == '__main__':
     print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
-    # createDirectory()
-    # addNewColumn()
-    # mergeFilesByWorkbookName()
-    # salesPivotTable()
-    # fifteenDaySalesPivotTable()
-    # productPromotionPivotTable()
-    # displayPromotionPivotTable()
-    # brandPromotionPivotTable()
-    # modify_brandPromotionPivotTable()
-    # twoWeeksEndValue()
-    # twoWeeksEndValueEveryShop()
-    # lastWeekSevenDaySales()
-    # lastWeekInventoryIndicators()
-    # lastWeekSevenDayACOS()
-    # mergePivotTable()
+    createDirectory()
+    addNewColumn()
+    mergeFilesByWorkbookName()
+    salesPivotTable()
+    fifteenDaySalesPivotTable()
+    productPromotionPivotTable()
+    displayPromotionPivotTable()
+    brandPromotionPivotTable()
+    modify_brandPromotionPivotTable()
+    twoWeeksEndValue()
+    twoWeeksEndValueEveryShop()
+    lastWeekSevenDaySales()
+    lastWeekInventoryIndicators()
+    lastWeekSevenDayACOS()
+    mergePivotTable()
     summary()
 
     print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
