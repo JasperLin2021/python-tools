@@ -1,0 +1,2 @@
+{"c_cell":"['Type', 'Refund', '退款', 'Claim', '索赔', 'Payment dispute', '付款纠纷']"}
+{"ak_cell":"['Cancel', '取消']"}
