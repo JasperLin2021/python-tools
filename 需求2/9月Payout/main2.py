@@ -64,6 +64,9 @@ def determineDailyBills(current_directory, month_content):
 
                                 worksheet.append([new_line])
 
+                        #debug
+                        # workbook.save(new_file_path)
+
                         # 获取K列中最后一个有数据的单元格的行数
                         last_row = worksheet.max_row
 
@@ -79,7 +82,11 @@ def determineDailyBills(current_directory, month_content):
                                 if cell.value == '--':
                                     continue  # K列的列号是11
                                 # print(folder+simple_filename)
-                                cell.value = float(cell.value)  # 将单元格的数据类型设置为数字
+                                try:
+                                    cell.value = float(cell.value) # 将单元格的数据类型设置为数字
+                                except Exception as e:
+                                    worksheet['B10'].value = str(99999999)
+                                    cell.value = 99999999
                                 total += float(cell.value)
                             total_list.append(total)
                         #
@@ -185,11 +192,15 @@ def determineDailyBills(current_directory, month_content):
                                 cell = worksheet.cell(row=row, column=c)
                                 if cell.value == '--':
                                     continue  # K列的列号是11
-                                cell.value = float(cell.value)  # 将单元格的数据类型设置为数字
+                                try:
+                                    cell.value = float(cell.value) # 将单元格的数据类型设置为数字
+                                except Exception as e:
+                                    worksheet['B10'].value = str(99999999)
+                                    cell.value = 99999999
                                 total += float(cell.value)
                             total_list.append(total)
 
-                        if float(worksheet['B10'].value.split()[0]) == float(
+                        if float(worksheet['B10'].value.split()[0].replace(",", "")) == float(
                                 monthlyPaymentDetails_dict.get(key).get(simple_filename.split('.')[1])):
                             result_dict = {key: value for key, value in zip(cell_list, total_list)}
                             yellow_fill = PatternFill(start_color="FFFF00", end_color="FFFF00", fill_type="solid")
@@ -343,14 +354,17 @@ def mergeFiles(current_directory, new_directory, big_dict, select_refund):
         # c_cell = ['Type', 'Refund', '退款', 'Claim', '索赔', 'Payment dispute', '付款纠纷']
         # ak_cell = ['Cancel', '取消']
         num = 0
+        # print(k)
         for select_cell_key in c_cell:
             for row in ws_totalTable.iter_rows(min_row=11, values_only=True):
                 cell_value_c = row[2]  # 获取B列的值（索引从0开始）
                 cell_value_ak = row[36]  # 获取B列的值（索引从0开始）
-                if cell_value_c == select_cell_key and not any(item in cell_value_ak for item in ak_cell):
-                    num += 1
-                    # 将满足条件的行复制到目标工作簿
-                    ws_totalRefundCumulativeDetails.append(row)
+                # print(cell_value_ak)
+                if cell_value_ak != None:
+                    if cell_value_c == select_cell_key and not any(item in cell_value_ak for item in ak_cell):
+                        num += 1
+                        # 将满足条件的行复制到目标工作簿
+                        ws_totalRefundCumulativeDetails.append(row)
         # 在第一行之前插入空白行
         ws_totalRefundCumulativeDetails.insert_rows(1)
         ws_totalRefundCumulativeDetails['D1'].value = num - 1
@@ -449,5 +463,5 @@ if __name__ == '__main__':
     mergeFiles(current_directory, new_directory, big_dict, select_refund)
 
     message = "完成！"
-    title = "截图识别完成"
+    title = "回款整合完成"
     pyautogui.alert(message, title)
