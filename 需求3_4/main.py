@@ -3,6 +3,7 @@ import csv
 from datetime import datetime
 
 import pandas as pd
+import pyautogui
 from openpyxl.reader.excel import load_workbook
 from openpyxl.workbook import Workbook
 
@@ -120,3 +121,7 @@ if __name__ == '__main__':
 
     ad_handle(current_directory, new_directory, ad_folder_name)
     bill_handle(current_directory, new_directory, bill_folder_name)
+
+    message = "完成！"
+    title = "广告核算报表完成"
+    pyautogui.alert(message, title)
