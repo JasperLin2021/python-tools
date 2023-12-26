@@ -7,6 +7,8 @@ import pyautogui
 from openpyxl.reader.excel import load_workbook
 from openpyxl.workbook import Workbook
 
+from utils import get_ad_sku_dict
+
 
 def createDirectory(current_directory):
     # 新建文件夹
@@ -99,6 +101,19 @@ def bill_handle(current_directory, new_directory, bill_folder_name):
     for row in new_worksheet.iter_rows():
         merge_row = [cell.value for cell in row]
         merge_worksheet.append(merge_row)
+
+
+    #添加运营人员
+    merge_worksheet['I1'] = "运营"
+    id_operator_file = "ID_运营表.xlsx"
+    id_operator_dict = get_ad_sku_dict(id_operator_file, "已删除重复项", 0, 2)
+    # 获取数据行数
+    row_count = merge_worksheet.max_row
+    # 从I2单元格开始，逐行填入递增的数字
+    for row in range(2, row_count + 1):
+        cell = f'I{row}'
+        # print(cell)
+        merge_worksheet[cell].value = id_operator_dict.get(merge_worksheet[f'B{row}'].value, '-')[0]
 
     merge_worksheet.title = "总表"
     merge_workbook.save(os.path.join(new_directory, str(current_year % 100) + "年" + str(current_month) + "月广告核算.xlsx"))

@@ -1,3 +1,4 @@
+import openpyxl
 from openpyxl.reader.excel import load_workbook
 
 
@@ -74,3 +75,26 @@ def deleteRow(file, type, keyword=None, column=None):
                     ws.delete_rows(row)
     # 保存修改
     wb.save(file)
+
+def get_ad_sku_dict(file, sheetname, keycolum, valuecolum):
+    ad_sku_dict = {}
+
+    # 打开品牌广告明细sku.xlsx文件
+    wb = openpyxl.load_workbook(file)
+    # ws = wb.active
+
+    for sheet_name in wb.sheetnames:
+        if sheet_name == sheetname:
+            ws = wb[sheet_name]
+
+            # 遍历每行数据，构建字典
+            for row in ws.iter_rows(min_row=2, values_only=True):
+                ad_name = row[keycolum]
+                ad_sku = row[valuecolum]
+
+                if ad_name not in ad_sku_dict:
+                    ad_sku_dict[ad_name] = [ad_sku]
+                else:
+                    ad_sku_dict[ad_name].append(ad_sku)
+
+            return ad_sku_dict
